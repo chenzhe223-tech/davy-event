@@ -123,21 +123,20 @@ def _event_from_jsonld(obj: dict[str, Any], source_url: str | None, platform: st
 
 
 def _find_start_datetime(text: str) -> str | None:
-    iso = re.search(r"(?<!\\d)(20\\d{2}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}(?::\\d{2})?(?:Z|[+-]\\d{2}:?\\d{2})?)?)", text)
+    iso = re.search(r"(?<!\d)(20\d{2}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:?\d{2})?)?)", text)
     if iso:
         return iso.group(1)
-    chinese = re.search(r"(20\\d{2})年(\\d{1,2})月(\\d{1,2})日(?:\\s*(\\d{1,2}):(\\d{2}))?", text)
+    chinese = re.search(r"(20\d{2})年(\d{1,2})月(\d{1,2})日(?:\s*(\d{1,2}):(\d{2}))?", text)
     if chinese:
         year, month, day, hour, minute = chinese.groups()
         value = f"{int(year):04d}-{int(month):02d}-{int(day):02d}"
         return f"{value}T{int(hour):02d}:{minute}:00" if hour is not None else value
-    slash = re.search(r"(?<!\\d)(20\\d{2})/(\\d{1,2})/(\\d{1,2})(?:\\s+(\\d{1,2}):(\\d{2}))?", text)
+    slash = re.search(r"(?<!\d)(20\d{2})/(\d{1,2})/(\d{1,2})(?:\s+(\d{1,2}):(\d{2}))?", text)
     if slash:
         year, month, day, hour, minute = slash.groups()
         value = f"{int(year):04d}-{int(month):02d}-{int(day):02d}"
         return f"{value}T{int(hour):02d}:{minute}:00" if hour is not None else value
     return None
-
 
 def extract_events(content: str | dict[str, Any] | list[Any], *,
                    source_url: str | None = None,
@@ -172,9 +171,10 @@ def extract_events(content: str | dict[str, Any] | list[Any], *,
 
     if not visible_text and not page_title:
         return []
-    # Deterministic fallback: identify explicit ISO date/time strings only.
-    date_match = re.search(r"\b(20\d{2}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:?\d{2})?)?)\b", visible_text)
-    title = page_title or (visible_text[:100] if visible_text else None)
+    # Deterministic fallback: parse only explicit dates; never infer a year.
+    start_datetime = _find_start_datetime(visible_text)
+    first_line = next((line.strip() for line in visible_text.splitlines() if line.strip()), "")
+    title = page_title or (first_line[:100] if first_line else None)
     record = normalize_event({
         "title": title,
         "description": description or visible_text[:1000] or None,
