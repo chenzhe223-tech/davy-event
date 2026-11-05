@@ -1,14 +1,20 @@
-# Connector contract
+# Connector contract and built-in web search
 
-Each source connector is optional and independently enabled. A connector must expose:
+Each source connector exposes `name`, `is_available()`, and `search(query, location, date_range)`. Connectors must use official APIs, licensed providers, permitted public access, or user-supplied material.
 
-- `name`: stable platform identifier.
-- `capabilities`: search, fetch-by-URL, or parse-user-supplied-content.
-- `is_available()`: report whether a compliant access route is configured.
-- `search(query, location, date_range)`: return raw records with source URLs and retrieval timestamps.
-- `fetch(url)`: retrieve a public/authorized source record when permitted.
+## Built-in Brave Search connector
 
-## Platform-specific implementation policy
+The `web-search` connector uses the official Brave Search Web endpoint. Configure the API key on the server only:
+
+    export BRAVE_SEARCH_API_KEY="your-key"
+
+The connector sends the key in the `X-Subscription-Token` header and requests structured web results. It maps title, description, URL, and publisher evidence into candidate event records. Search snippets are not event verification: each candidate remains `source_claim` until the event details are corroborated from its primary source.
+
+Install no extra package for this connector; it uses Python's standard library. If the key is missing, source coverage is `unavailable`. Do not put the key in browser code, Git, Skill text, logs, or API responses.
+
+Official API reference: https://api-dashboard.search.brave.com/api-reference/web/search/get
+
+## Platform-specific policy
 
 ### Xiaohongshu
 Use authorized/publicly accessible content, official or licensed interfaces, or content/URLs supplied by the user. Do not evade login, signatures, CAPTCHA, rate limits, or access controls.
@@ -19,7 +25,4 @@ Use authorized public endpoints or licensed access where available; support user
 ### Dianping
 Prefer official/authorized business data and user-provided public listing links. Do not scrape restricted review or merchant data, or bypass anti-bot controls.
 
-### Web
-Use a compliant search provider or public pages. Preserve canonical URLs, snippets, publisher, and retrieval time.
-
-If compliant access is not available, return an explicit `unsupported`/unavailable result rather than pretending to search.
+No live Xiaohongshu, Douyin, or Dianping connector is bundled at this release. An absent connector must be reported as unavailable, never simulated.
