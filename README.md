@@ -1,43 +1,53 @@
 # DAVYLAB Event Radar
 
-A reusable Agent Skill and Python toolkit for discovering, extracting, validating, deduplicating, and exporting public event information.
+A reusable Agent Skill and toolkit for discovering, extracting, validating, deduplicating, and exporting public event information.
 
 Repository: https://github.com/chenzhe223-tech/davy-event
 
-## Quick start
+## Use it now
+
+Install local processing:
 
     git clone https://github.com/chenzhe223-tech/davy-event.git
     cd davy-event
     python -m pip install -e .
-
-Process supplied content locally without API keys:
-
     davy-event extract event.html --source-url "https://example.com/event"
-    davy-event normalize event.json
-    davy-event verify event.json
-    davy-event dedupe events.json
-    davy-event export events.json --format jsonl
 
-Run the MCP server for compatible AI clients:
+## Enable web discovery and REST API
 
-    python -m pip install -e ".[mcp]"
-    python -m davy_event.adapters.mcp.server
+    python -m pip install -e ".[api]"
+    export BRAVE_SEARCH_API_KEY="your-key"
+    uvicorn davy_event.api:app --host 127.0.0.1 --port 8000
 
-See SKILL.md for the complete agent workflow and docs/CONNECTORS.md for provider integration.
+The Brave Search connector uses the official API and keeps the API key server-side. Without a key, coverage is explicitly unavailable.
 
-## Capabilities and limits
+## Enable poster OCR
 
-- Extracts event candidates from supplied HTML, Schema.org Event JSON-LD, structured records, and plain text.
-- Offers optional host-provided LLM extraction with verbatim source-quote checks.
-- Normalizes records, preserves evidence, deduplicates, checks completeness, and exports JSON/JSONL.
-- Provides a pluggable connector contract, discovery orchestration, coverage reporting, and MCP tools.
-- No live Xiaohongshu, Douyin, Dianping, or general web search connector is bundled yet.
-- The core does not fetch URLs. The host application must safely retrieve public page content or accept user-supplied content.
+Install the Python extra and the Tesseract system binary:
 
-## Project status
+    python -m pip install -e ".[ocr]"
 
-v0.4.0: usable local workflow. Local processing is available without API keys. Live discovery requires separately configured, compliant connectors. See CHANGELOG.md.
+Then install Tesseract and the language packs required by your OS. The API exposes `POST /ocr`.
+
+## API capabilities
+
+- `GET /health`
+- `POST /discover` — configured provider search and source coverage.
+- `POST /fetch` — SSRF-resistant public HTTP(S) fetch and event extraction.
+- `POST /extract` — supplied HTML, JSON-LD, or text extraction.
+- `POST /ocr` — image OCR when the optional engine is installed.
+- `POST /normalize`, `/verify`, `/deduplicate`, `/export`.
+
+See [SKILL.md](SKILL.md), [docs/CONNECTORS.md](docs/CONNECTORS.md), and [docs/INTEGRATION.md](docs/INTEGRATION.md).
+
+## Important limits
+
+- Brave Search requires a user-provided API key and may incur provider charges.
+- Xiaohongshu, Douyin, and Dianping do not yet have bundled live connectors.
+- OCR requires the host's Tesseract binary and language data.
+- The REST API should be kept behind authentication and network controls before remote exposure.
+- Search snippets and OCR output are candidate evidence, not independently verified event facts.
 
 ## License
 
-MIT. See LICENSE.
+MIT. See [LICENSE](LICENSE).
