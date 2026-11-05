@@ -18,10 +18,11 @@ Install and run:
     pip install -e ".[api]"
     uvicorn davy_event.api:app --host 127.0.0.1 --port 8000
 
-The default bind is loopback in this example. Put the service behind authenticated access and TLS before exposing it to a network. Configure the Brave key as a server environment variable.
+The default bind is loopback in this example. `POST /discover` enriches up to five returned search candidates from their public source pages by default; set `fetch_sources=false` or `max_sources` to control this. The `GET /connectors` endpoint reports the real provider status. Put the service behind authenticated access and TLS before exposing it to a network. Configure the Brave key as a server environment variable.
 
 Endpoints:
 - `GET /health`
+- `GET /connectors` — current readiness for web-search and target social platforms.
 - `POST /discover` — query configured providers and return source coverage.
 - `POST /extract` — extract events from supplied text, HTML, or JSON-LD.
 - `POST /fetch` — safely fetch public HTTP(S) pages and extract event candidates.
