@@ -76,7 +76,6 @@ def create_app() -> FastAPI:
         ] = {
             "type": "http",
             "scheme": "bearer",
-            "bearerFormat": "JWT",
             "description": "Enter the DAVY_EVENT_API_TOKEN value. Do not include the 'Bearer ' prefix.",
         }
         public_paths = {"/health"}
