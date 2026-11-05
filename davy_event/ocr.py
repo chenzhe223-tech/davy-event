@@ -14,7 +14,7 @@ class OCRUnavailableError(RuntimeError):
 def extract_text_from_image(image_bytes: bytes, *, language: str = "eng", max_bytes: int = 8_000_000) -> dict[str, Any]:
     if not image_bytes or len(image_bytes) > max_bytes:
         raise ValueError("Image is empty or exceeds the configured size limit.")
-    if not re.fullmatch(r"[A-Za-z0-9_+.-]{1,40}", language):
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_+.-]{0,39}", language):
         raise ValueError("Invalid OCR language code.")
     try:
         from PIL import Image
