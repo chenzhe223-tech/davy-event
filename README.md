@@ -18,11 +18,11 @@ Install local processing:
 On Windows, run `examples/quickstart.ps1` from PowerShell for the local API setup. The script binds only to `127.0.0.1` and does not expose the service publicly.
 
     python -m pip install -e ".[api]"
-    export BRAVE_SEARCH_API_KEY="your-key"
+    ${env:VOLCENGINE_SEARCH_API_KEY} = "your-key"
     export DAVY_EVENT_API_TOKEN="set-a-long-random-token-for-remote-access"
     uvicorn davy_event.api:app --host 127.0.0.1 --port 8000
 
-The Brave Search connector uses the official API and keeps the API key server-side. Without a key, coverage is explicitly unavailable.
+The default `web-search` connector uses the official Volcengine Doubao Global Search API. Set `VOLCENGINE_SEARCH_API_KEY` on the server; the key is never sent to browser clients. Each account currently receives 500 free searches per month, shared by Global and Custom editions. When free quota is exhausted, the connector reports an error and does not switch to a paid provider.
 
 ## Enable poster OCR
 
@@ -45,7 +45,7 @@ See [SKILL.md](SKILL.md), [docs/CONNECTORS.md](docs/CONNECTORS.md), and [docs/IN
 
 ## Important limits
 
-- Brave Search requires a user-provided API key and may incur provider charges.
+- Volcengine search requires a user-provided API key. The provider currently documents 500 free searches per account per month; this is a quota, not an unlimited free plan. No automatic paid fallback is configured.
 - Xiaohongshu, Douyin, and Dianping do not yet have bundled live connectors.
 - OCR requires the host's Tesseract binary and language data.
 - Set DAVY_EVENT_API_TOKEN to require Bearer authentication on API routes other than health/docs; keep network controls in place as well.
