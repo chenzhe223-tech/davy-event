@@ -26,11 +26,22 @@ The default `web-search` connector uses the official Volcengine Doubao Global Se
 
 ## Enable poster OCR
 
-Install the Python extra and the Tesseract system binary:
+OCR requires both the Python extra and the Tesseract system engine plus language data.
+
+Local Python dependencies:
 
     python -m pip install -e ".[ocr]"
 
-Then install Tesseract and the language packs required by your OS. The API exposes `POST /ocr`.
+On Debian 12 / Render native Python runtime, install the system engine and English language data:
+
+    sudo apt-get update
+    sudo apt-get install -y tesseract-ocr tesseract-ocr-eng
+
+For a Render deployment that enables the API and OCR together, use this build command:
+
+    sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng && python -m pip install --upgrade pip && python -m pip install ".[api,ocr]" && tesseract --version
+
+The API exposes `POST /ocr`. The default language is `eng`; install the matching Tesseract language package before requesting another language (for example, `tesseract-ocr-chi-sim` for Simplified Chinese where available).
 
 ## API capabilities
 
@@ -47,7 +58,7 @@ See [SKILL.md](SKILL.md), [docs/CONNECTORS.md](docs/CONNECTORS.md), and [docs/IN
 
 - Volcengine search requires a user-provided API key. The provider currently documents 500 free searches per account per month; this is a quota, not an unlimited free plan. No automatic paid fallback is configured.
 - Xiaohongshu, Douyin, and Dianping do not yet have bundled live connectors.
-- OCR requires the host's Tesseract binary and language data.
+- OCR requires the host's Tesseract binary and the requested language data.
 - Set DAVY_EVENT_API_TOKEN to require Bearer authentication on API routes other than health/docs; keep network controls in place as well.
 - Search snippets and OCR output are candidate evidence, not independently verified event facts.
 
