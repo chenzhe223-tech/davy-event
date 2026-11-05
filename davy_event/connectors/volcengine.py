@@ -13,7 +13,7 @@ from davy_event.connectors import ConnectorResult
 class VolcengineSearchConnector:
     """Official Volcengine Global Search API; never switches to paid providers."""
 
-    name = "volcengine-search"
+    name = "web-search"
     endpoint = "https://open.feedcoopapi.com/search_api/global_search"
 
     def __init__(
@@ -146,6 +146,7 @@ class VolcengineSearchConnector:
                 "description": description,
                 "source_url": doc.get("Url"),
                 "source_platform": self.name,
+                "search_provider": "volcengine",
                 "published_at": info.get("PublishTime") or None,
                 "category": "web-search-candidate",
                 "evidence": [{
