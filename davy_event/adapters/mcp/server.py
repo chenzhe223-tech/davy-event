@@ -19,7 +19,7 @@ from davy_event import (
     register_connector,
 )
 from davy_event.extraction import extract_events
-from davy_event.connectors import BraveSearchConnector
+from davy_event.connectors import VolcengineSearchConnector
 from davy_event.discovery import discover_events as run_discovery, connector_status as get_connector_status
 
 
@@ -34,7 +34,7 @@ def _load_connector_plugins() -> None:
                 register_connector(connector)
 
 
-register_connector(BraveSearchConnector())
+register_connector(VolcengineSearchConnector())
 _load_connector_plugins()
 mcp = FastMCP("davy-event")
 
