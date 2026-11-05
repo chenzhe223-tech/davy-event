@@ -66,11 +66,19 @@ def create_app() -> FastAPI:
     async def require_api_token(request: Request, call_next):
         expected = os.getenv("DAVY_EVENT_API_TOKEN")
         public_paths = {"/health", "/openapi.json", "/docs", "/redoc"}
-        if expected and request.url.path not in public_paths:
-            supplied = request.headers.get("Authorization", "")
-            token = supplied[7:] if supplied.lower().startswith("bearer ") else ""
-            if not token or not hmac.compare_digest(token, expected):
-                return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+        if request.url.path not in public_paths:
+            # Fail closed on Render if the production bearer token has not yet
+            # been configured. Local development remains frictionless.
+            if os.getenv("RENDER") and not expected:
+                return JSONResponse(
+                    status_code=503,
+                    content={"detail": "Service configuration incomplete: set DAVY_EVENT_API_TOKEN in the hosting environment."},
+                )
+            if expected:
+                supplied = request.headers.get("Authorization", "")
+                token = supplied[7:] if supplied.lower().startswith("bearer ") else ""
+                if not token or not hmac.compare_digest(token, expected):
+                    return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
         return await call_next(request)
 
     @app.get("/health")
