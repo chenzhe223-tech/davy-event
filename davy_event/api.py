@@ -132,6 +132,33 @@ def create_app() -> FastAPI:
                 except (RuntimeError, OSError, http.client.HTTPException) as exc:
                     candidate["fetch_status"] = "fetch_error"
                     candidate["fetch_message"] = str(exc)
+                # Search-result titles/snippets can contain explicit date ranges even
+                # when a source page is blocked by SSRF safeguards or unavailable.
+                if not candidate.get("start_datetime") or not candidate.get("end_datetime"):
+                    hint_text = " ".join(
+                        str(candidate.get(key) or "")
+                        for key in ("title", "description")
+                    ).strip()
+                    if hint_text:
+                        hints = extract_events(
+                            hint_text,
+                            source_url=source_url,
+                            source_platform="web-search",
+                        )
+                        if hints:
+                            hint = hints[0]
+                            if not candidate.get("start_datetime") and hint.get("start_datetime"):
+                                candidate["start_datetime"] = hint["start_datetime"]
+                            if not candidate.get("end_datetime") and hint.get("end_datetime"):
+                                candidate["end_datetime"] = hint["end_datetime"]
+                            if hint.get("start_datetime") or hint.get("end_datetime"):
+                                candidate.setdefault("evidence", []).append({
+                                    "type": "search_result_date_hint",
+                                    "source_url": source_url,
+                                    "title": candidate.get("title"),
+                                    "note": "Date parsed from search-result title/description; not independently verified.",
+                                })
+                                candidate["verification_status"] = "source_claim"
         result["enrichment"] = {
             "enabled": request.fetch_sources,
             "max_sources": request.max_sources,
