@@ -83,3 +83,13 @@ def test_api_token_protects_non_health_routes(monkeypatch):
     assert client.get("/connectors").status_code == 401
     assert client.get("/connectors", headers={"Authorization": "Bearer wrong"}).status_code == 401
     assert client.get("/connectors", headers={"Authorization": "Bearer test-secret"}).status_code == 200
+
+
+def test_render_fails_closed_when_api_token_is_not_configured(monkeypatch):
+    monkeypatch.setenv("RENDER", "true")
+    monkeypatch.delenv("DAVY_EVENT_API_TOKEN", raising=False)
+    client = TestClient(create_app())
+    assert client.get("/health").status_code == 200
+    response = client.get("/connectors")
+    assert response.status_code == 503
+    assert "DAVY_EVENT_API_TOKEN" in response.json()["detail"]
