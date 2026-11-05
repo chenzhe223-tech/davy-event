@@ -30,6 +30,8 @@ print(result["status"], result["coverage"], result["events"])
 
 The example record illustrates the required shape; it is not a live event listing.
 
+For reusable in-process registration, call `register_connector(instance)`; later calls to `discover_events(query)` use the registered providers. Use `unregister_connector(name)` to remove one.
+
 ## Process user-provided records
 
 ```python
@@ -59,7 +61,9 @@ pip install -e ".[mcp]"
 python -m davy_event.adapters.mcp.server
 ```
 
-The MCP server exposes `discover_events`, `normalize`, `deduplicate`, `verify`, `export`, and `connector_status`. The default server process has no platform connectors registered, so `discover_events` correctly returns `unavailable` until the host application supplies and registers a compliant provider. Core Python integrations can register providers directly.
+The MCP server exposes `discover_events`, `normalize`, `deduplicate`, `verify`, `export`, and `connector_status`. By default, discovery returns `unavailable` because no live providers are bundled.
+
+To load authorized provider plugins, set `DAVY_EVENT_CONNECTOR_MODULES` to a comma-separated list of importable Python module names before starting the server. Each module must expose `register_connectors()`, returning connector instances; alternatively, it may register providers itself using `register_connector(instance)` during import. Only load trusted local modules.
 
 ## Tool contract
 
