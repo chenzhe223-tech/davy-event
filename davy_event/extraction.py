@@ -141,9 +141,10 @@ def _find_start_datetime(text: str) -> str | None:
 def _find_date_range(text: str) -> tuple[str | None, str | None]:
     """Parse explicit English date ranges such as 2–8 Nov 2026 without guessing a year."""
     month = r"(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+    separator = r"(?:to|through|[-–—])"
     patterns = [
-        rf"(?<!\d)(\d{{1,2}})\s*[-–—]\s*(\d{{1,2}})\s+{month}\s+(20\d{{2}})(?!\d)",
-        rf"(?<!\d){month}\s+(\d{{1,2}})\s*[-–—]\s*(\d{{1,2}}),?\s+(20\d{{2}})(?!\d)",
+        rf"(?<!\d)(\d{{1,2}})\s*{separator}\s*(\d{{1,2}})\s+{month}\s+(20\d{{2}})(?!\d)",
+        rf"(?<!\d){month}\s+(\d{{1,2}})\s*{separator}\s*(\d{{1,2}}),?\s+(20\d{{2}})(?!\d)",
     ]
     for index, pattern in enumerate(patterns):
         match = re.search(pattern, text, re.IGNORECASE)
@@ -197,10 +198,13 @@ def extract_events(content: str | dict[str, Any] | list[Any], *,
     if not visible_text and not page_title:
         return []
     # Deterministic fallback: parse only explicit dates; never infer a year.
-    date_text = " ".join(part for part in (page_title, description or "", visible_text) if part)
-    start_datetime, end_datetime = _find_date_range(date_text)
+    # Prefer the page title: long descriptions often list unrelated dates for other events.
+    start_datetime, end_datetime = _find_date_range(page_title) if page_title else (None, None)
     if start_datetime is None:
-        start_datetime = _find_start_datetime(date_text)
+        date_text = " ".join(part for part in (page_title, description or "", visible_text) if part)
+        start_datetime, end_datetime = _find_date_range(date_text)
+        if start_datetime is None:
+            start_datetime = _find_start_datetime(date_text)
     first_line = next((line.strip() for line in visible_text.splitlines() if line.strip()), "")
     title = page_title or (first_line[:100] if first_line else None)
     record = normalize_event({
