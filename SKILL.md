@@ -7,7 +7,7 @@ description: Discover public events and local activities using authorized web se
 
 ## Capabilities
 
-- Search public web results through the configured Brave Search API connector.
+- Search public web results through the configured Volcengine Doubao Global Search API connector.
 - Extract from user-provided text, HTML, Schema.org Event JSON-LD, and fetched public pages.
 - Safely fetch public HTTP(S) URLs through the Event Radar API.
 - OCR user-supplied event posters when the optional OCR engine is installed.
@@ -31,9 +31,9 @@ description: Discover public events and local activities using authorized web se
     pip install -e ".[api]"
     uvicorn davy_event.api:app --host 127.0.0.1 --port 8000
 
-Configure Brave and API access on the server:
+Configure Volcengine search and API access on the server:
 
-    export BRAVE_SEARCH_API_KEY="your-key"
+    export VOLCENGINE_SEARCH_API_KEY="your-key"
     export DAVY_EVENT_API_TOKEN="long-random-secret"
 
 When `DAVY_EVENT_API_TOKEN` is set, send `Authorization: Bearer <token>` with API requests. Without it, keep the service bound to loopback only.
@@ -49,7 +49,7 @@ Useful endpoints: `/connectors`, `/discover` (search candidates are safely enric
 
 ## Source status
 
-Brave Search is supported when an API key is configured. Xiaohongshu, Douyin, and Dianping are not bundled live connectors yet. Do not imply they were searched. User-provided material can still be processed.
+Volcengine Doubao Global Search is supported when VOLCENGINE_SEARCH_API_KEY is configured. The provider currently documents 500 free searches per account per month; quota exhaustion is reported without paid fallback. Xiaohongshu, Douyin, and Dianping are not bundled live connectors yet. Do not imply they were searched. User-provided material can still be processed.
 
 ## Verification labels
 
