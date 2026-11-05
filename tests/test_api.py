@@ -51,9 +51,9 @@ def test_discover_enriches_search_candidates_with_fetched_event(monkeypatch):
         content_type="text/html",
         byte_count=200,
     ))
+    client = TestClient(create_app())
     from davy_event.discovery import register_connector
     register_connector(FakeConnector())
-    client = TestClient(create_app())
     response = client.post("/discover", json={"query": "open day", "platforms": ["web-search"]})
     assert response.status_code == 200
     event = response.json()["events"][0]
