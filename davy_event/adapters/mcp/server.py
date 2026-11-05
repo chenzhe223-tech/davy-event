@@ -19,8 +19,8 @@ from davy_event import (
     register_connector,
 )
 from davy_event.extraction import extract_events
-from davy_event.connectors import unavailable
-from davy_event.discovery import discover_events as run_discovery
+from davy_event.connectors import BraveSearchConnector
+from davy_event.discovery import discover_events as run_discovery, connector_status as get_connector_status
 
 
 def _load_connector_plugins() -> None:
@@ -34,6 +34,7 @@ def _load_connector_plugins() -> None:
                 register_connector(connector)
 
 
+register_connector(BraveSearchConnector())
 _load_connector_plugins()
 mcp = FastMCP("davy-event")
 
@@ -80,9 +81,7 @@ def export(events: list[dict], format: str = "json") -> str:
 @mcp.tool()
 def connector_status(platform: str) -> dict:
     """Report availability honestly; live search needs a configured compliant connector."""
-    result = unavailable(platform)
-    return {"platform": result.platform, "status": result.status,
-            "message": result.message, "records": result.records}
+    return get_connector_status(platform)
 
 
 if __name__ == "__main__":
