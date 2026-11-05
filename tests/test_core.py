@@ -23,3 +23,21 @@ def test_verify_flags_missing_fields():
 
 def test_export_json():
     assert '"title": "Demo"' in export_events([{"title": "Demo"}])
+
+
+def test_deduplicate_merges_dict_evidence_without_crashing():
+    a = normalize_event({
+        "title": "Food Festival",
+        "start_datetime": "2026-11-08T11:00:00+08:00",
+        "source_url": "https://a.test",
+        "evidence": [{"url": "https://a.test", "type": "post"}],
+    }, "web")
+    b = normalize_event({
+        "title": "Food Festival",
+        "start_datetime": "2026-11-08T11:00:00+08:00",
+        "source_url": "https://b.test",
+        "evidence": [{"url": "https://b.test", "type": "post"}],
+    }, "social")
+    result = deduplicate_events([a, b])
+    assert len(result) == 1
+    assert len(result[0]["evidence"]) == 2
