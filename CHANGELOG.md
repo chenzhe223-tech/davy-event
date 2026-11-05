@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0 — Free-quota-first Volcengine search
+
+- Added the official Volcengine Doubao Global Search connector.
+- Made Volcengine the default REST API and MCP web-search provider while preserving the stable `web-search` connector identifier.
+- Added server-only `VOLCENGINE_SEARCH_API_KEY` configuration and structured mapping for titles, URLs, snippets, publisher, and publish-time metadata.
+- Added explicit free-quota exhaustion handling; no automatic paid-provider fallback is attempted.
+- Retained the Brave connector as an optional legacy integration.
+- Updated Windows quickstart, Skill instructions, and connector documentation.
+
 ## 0.5.0 — Search, safe fetch, OCR and REST API foundation
 
 - Added Brave Search API connector with server-side token configuration and honest unavailable status.
