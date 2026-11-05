@@ -93,3 +93,23 @@ def test_render_fails_closed_when_api_token_is_not_configured(monkeypatch):
     response = client.get("/connectors")
     assert response.status_code == 503
     assert "DAVY_EVENT_API_TOKEN" in response.json()["detail"]
+
+def test_openapi_exposes_bearer_auth_for_protected_routes(monkeypatch):
+    monkeypatch.setenv("DAVY_EVENT_API_TOKEN", "test-secret")
+    client = TestClient(create_app())
+
+    docs = client.get("/docs")
+    schema = client.get("/openapi.json")
+
+    assert docs.status_code == 200
+    assert schema.status_code == 200
+    openapi = schema.json()
+    assert openapi["components"]["securitySchemes"]["BearerAuth"] == {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter the DAVY_EVENT_API_TOKEN value. Do not include the 'Bearer ' prefix.",
+    }
+    assert openapi["paths"]["/connectors"]["get"]["security"] == [{"BearerAuth": []}]
+    assert "security" not in openapi["paths"]["/health"]["get"]
+\n
