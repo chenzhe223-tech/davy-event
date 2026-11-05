@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import os
 import http.client
+import hmac
 from typing import Any
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from .ai_extraction import extract_with_model
@@ -59,6 +61,17 @@ def create_app() -> FastAPI:
     )
     # Registered even without a key so coverage explicitly reports unavailable.
     register_connector(BraveSearchConnector())
+
+    @app.middleware("http")
+    async def require_api_token(request: Request, call_next):
+        expected = os.getenv("DAVY_EVENT_API_TOKEN")
+        public_paths = {"/health", "/openapi.json", "/docs", "/redoc"}
+        if expected and request.url.path not in public_paths:
+            supplied = request.headers.get("Authorization", "")
+            token = supplied[7:] if supplied.lower().startswith("bearer ") else ""
+            if not token or not hmac.compare_digest(token, expected):
+                return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+        return await call_next(request)
 
     @app.get("/health")
     def health() -> dict[str, Any]:
