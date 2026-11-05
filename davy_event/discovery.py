@@ -11,9 +11,22 @@ from .connectors import ConnectorResult, EventConnector, unavailable
 from .core import deduplicate_events, normalize_event
 
 
+_REGISTERED_CONNECTORS: dict[str, EventConnector] = {}
+
+
+def register_connector(connector: EventConnector) -> None:
+    """Register or replace a provider by its stable name."""
+    _REGISTERED_CONNECTORS[connector.name] = connector
+
+
+def unregister_connector(name: str) -> None:
+    """Remove a previously registered provider."""
+    _REGISTERED_CONNECTORS.pop(name, None)
+
+
 def discover_events(
     query: str,
-    connectors: Iterable[EventConnector] = (),
+    connectors: Iterable[EventConnector] | None = None,
     *,
     location: str | None = None,
     date_range: dict[str, str] | None = None,
@@ -25,7 +38,9 @@ def discover_events(
     suppress results from other providers.
     """
     requested = list(platforms or [])
-    providers = list(connectors)
+    providers = list(connectors if connectors is not None else _REGISTERED_CONNECTORS.values())
+    if requested:
+        providers = [provider for provider in providers if provider.name in requested]
     if not providers:
         coverage = [unavailable(name) for name in (requested or ["all"])]
         return {
@@ -64,6 +79,10 @@ def discover_events(
                 "message": f"Connector failed: {type(exc).__name__}",
             })
 
+    covered = {item["platform"] for item in coverage}
+    for missing_platform in requested:
+        if missing_platform not in covered:
+            coverage.append(_coverage(unavailable(missing_platform)))
     merged = deduplicate_events(events)
     status = "ok" if merged else ("partial" if any(x["status"] == "error" for x in coverage) else "empty")
     return {
