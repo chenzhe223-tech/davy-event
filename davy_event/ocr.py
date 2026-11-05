@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from io import BytesIO
 from typing import Any
+import re
+import shutil
 
 
 class OCRUnavailableError(RuntimeError):
@@ -12,6 +14,8 @@ class OCRUnavailableError(RuntimeError):
 def extract_text_from_image(image_bytes: bytes, *, language: str = "eng", max_bytes: int = 8_000_000) -> dict[str, Any]:
     if not image_bytes or len(image_bytes) > max_bytes:
         raise ValueError("Image is empty or exceeds the configured size limit.")
+    if not re.fullmatch(r"[A-Za-z0-9_+.-]{1,40}", language):
+        raise ValueError("Invalid OCR language code.")
     try:
         from PIL import Image
         import pytesseract
@@ -29,3 +33,15 @@ def extract_text_from_image(image_bytes: bytes, *, language: str = "eng", max_by
     except pytesseract.TesseractNotFoundError as exc:
         raise OCRUnavailableError("Tesseract OCR binary is not installed on this host.") from exc
     return {"text": text.strip(), "engine": "tesseract", "language": language, "image_format": image.format}
+
+
+def ocr_status() -> str:
+    """Report whether the optional Python packages and Tesseract binary exist."""
+    if not shutil.which("tesseract"):
+        return "unavailable"
+    try:
+        import PIL  # noqa: F401
+        import pytesseract  # noqa: F401
+    except ImportError:
+        return "unavailable"
+    return "available"
