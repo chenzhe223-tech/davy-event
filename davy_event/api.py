@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from .ai_extraction import extract_with_model
 from .connectors.brave import BraveSearchConnector
 from .core import deduplicate_events, export_events, normalize_event, verify_event
-from .discovery import discover_events as run_discovery, register_connector
+from .discovery import discover_events as run_discovery, register_connector, connector_status as get_connector_status, registered_connector_names
 from .extraction import extract_events
 from .fetcher import UnsafeURLError, fetch_public_url
 from .ocr import OCRUnavailableError, extract_text_from_image
@@ -68,6 +68,11 @@ def create_app() -> FastAPI:
             "connectors": {"web-search": "configured" if os.getenv("BRAVE_SEARCH_API_KEY") else "unavailable"},
             "ocr": "optional",
         }
+
+    @app.get("/connectors")
+    def connectors() -> dict[str, Any]:
+        known = set(registered_connector_names()) | {"web-search", "xiaohongshu", "douyin", "dianping"}
+        return {"connectors": [get_connector_status(name) for name in sorted(known)]}
 
     @app.post("/extract")
     def extract(request: ExtractRequest) -> dict[str, Any]:
