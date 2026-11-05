@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from .ai_extraction import extract_with_model
-from .connectors.brave import BraveSearchConnector
+from .connectors.volcengine import VolcengineSearchConnector
 from .core import deduplicate_events, export_events, normalize_event, verify_event
 from .discovery import discover_events as run_discovery, register_connector, connector_status as get_connector_status, registered_connector_names
 from .extraction import extract_events
@@ -56,11 +56,11 @@ class FetchRequest(BaseModel):
 def create_app() -> FastAPI:
     app = FastAPI(
         title="DAVYLAB Event Radar API",
-        version="0.5.0",
+        version="0.6.0",
         description="Compliant event discovery, extraction, URL fetching, OCR, verification and export.",
     )
     # Registered even without a key so coverage explicitly reports unavailable.
-    register_connector(BraveSearchConnector())
+    register_connector(VolcengineSearchConnector())
 
     @app.middleware("http")
     async def require_api_token(request: Request, call_next):
@@ -77,8 +77,8 @@ def create_app() -> FastAPI:
     def health() -> dict[str, Any]:
         return {
             "status": "ok",
-            "version": "0.5.0",
-            "connectors": {"web-search": "configured" if os.getenv("BRAVE_SEARCH_API_KEY") else "unavailable"},
+            "version": "0.6.0",
+            "connectors": {"web-search": "configured" if os.getenv("VOLCENGINE_SEARCH_API_KEY") else "unavailable"},
             "ocr": ocr_status(),
         }
 
