@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, UploadFile, Request
 from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel, Field
 
 from .ai_extraction import extract_with_model
@@ -59,6 +60,37 @@ def create_app() -> FastAPI:
         version="0.6.0",
         description="Compliant event discovery, extraction, URL fetching, OCR, verification and export.",
     )
+    # Register an HTTP Bearer scheme in OpenAPI so Swagger UI exposes
+    # its Authorize control. Runtime enforcement remains in the middleware below.
+    def custom_openapi() -> dict[str, Any]:
+        if app.openapi_schema:
+            return app.openapi_schema
+        schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+        )
+        schema.setdefault("components", {}).setdefault("securitySchemes", {})[
+            "BearerAuth"
+        ] = {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Enter the DAVY_EVENT_API_TOKEN value. Do not include the 'Bearer ' prefix.",
+        }
+        public_paths = {"/health"}
+        for path, methods in schema.get("paths", {}).items():
+            if path in public_paths:
+                continue
+            for operation in methods.values():
+                if isinstance(operation, dict):
+                    operation["security"] = [{"BearerAuth": []}]
+        app.openapi_schema = schema
+        return app.openapi_schema
+
+    app.openapi = custom_openapi
+
     # Registered even without a key so coverage explicitly reports unavailable.
     register_connector(VolcengineSearchConnector())
 
