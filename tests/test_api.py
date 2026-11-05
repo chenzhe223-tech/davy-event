@@ -63,3 +63,14 @@ def test_discover_enriches_search_candidates_with_fetched_event(monkeypatch):
         assert event["verification_status"] == "source_claim"
     finally:
         unregister_connector("web-search")
+
+
+def test_connectors_endpoint_reports_platform_gaps():
+    client = TestClient(create_app())
+    response = client.get("/connectors")
+    assert response.status_code == 200
+    status = {item["platform"]: item["status"] for item in response.json()["connectors"]}
+    assert "web-search" in status
+    assert status["xiaohongshu"] == "unavailable"
+    assert status["douyin"] == "unavailable"
+    assert status["dianping"] == "unavailable"
