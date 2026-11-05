@@ -16,7 +16,7 @@ def test_health_and_extract_api():
 
 
 def test_discover_reports_missing_search_key_honestly(monkeypatch):
-    monkeypatch.delenv("BRAVE_SEARCH_API_KEY", raising=False)
+    monkeypatch.delenv("VOLCENGINE_SEARCH_API_KEY", raising=False)
     client = TestClient(create_app())
     response = client.post("/discover", json={"query": "family events", "platforms": ["web-search"]})
     assert response.status_code == 200
