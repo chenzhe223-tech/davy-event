@@ -54,3 +54,23 @@ def test_plain_text_extracts_explicit_chinese_datetime():
     )
     assert events[0]["title"] == "城市周末市集 活动时间：2026年11月15日 14:30 欢迎参加" or events[0]["title"] == "城市周末市集"
     assert events[0]["start_datetime"] == "2026-11-15T14:30:00"
+
+
+def test_extracts_explicit_english_date_range_from_title():
+    events = extract_events(
+        "Things To Do With Kids In Singapore This Weekend: 2 - 8 Nov 2026",
+        source_url="https://events.test/kids",
+        source_platform="web-search",
+    )
+    assert events[0]["start_datetime"] == "2026-11-02"
+    assert events[0]["end_datetime"] == "2026-11-08"
+
+
+def test_extracts_english_date_range_from_html_title_and_meta():
+    html = """<html><head>
+    <title>Family events: 2–8 Nov 2026</title>
+    <meta name="description" content="Events across Singapore this week." />
+    </head><body>Family activities</body></html>"""
+    events = extract_events(html, source_url="https://events.test/week")
+    assert events[0]["start_datetime"] == "2026-11-02"
+    assert events[0]["end_datetime"] == "2026-11-08"
