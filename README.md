@@ -6,15 +6,15 @@ A reusable, open-source Agent Skill and Python core for discovering, extracting,
 
 ## What it does
 
-- Normalizes event records from authorized providers, public sources, and user-provided content.
+- Extracts event candidates from supplied HTML, Schema.org Event JSON-LD, structured records, and plain text.
+- Normalizes event details and preserves source URLs and evidence.
 - Provides a pluggable connector contract and provider-agnostic discovery orchestration.
 - Reports source coverage and provider failures instead of pretending unavailable sources were searched.
-- Deduplicates cross-source mentions and preserves provenance/evidence.
 - Exposes Python functions, an MCP server, and a stable JSON schema for other apps and agents.
 
 ## Platform boundary
 
-Xiaohongshu, Douyin, and Dianping are target integrations, not currently live connectors. They require an official/authorized API, permitted public access, or user-provided exports. This project does not bypass login, CAPTCHAs, access controls, rate limits, private content, or anti-bot protections. Never invent event details.
+Xiaohongshu, Douyin, and Dianping are target integrations, not currently live connectors. They require an official/authorized API, permitted public access, or user-provided exports. This project does not bypass login, CAPTCHAs, access controls, rate limits, private content, or anti-bot protections. The extraction module processes content supplied by the host application; it does not crawl or fetch URLs itself.
 
 ## Quick start
 
@@ -33,7 +33,7 @@ See [SKILL.md](SKILL.md), [docs/CONNECTORS.md](docs/CONNECTORS.md), and [docs/IN
 
 ## Project status
 
-**v0.2.0 — discovery orchestration**. Includes a provider contract, discovery coordinator, source coverage reporting, MCP tools, and mock-provider tests. No live social-platform connector is claimed.
+**v0.3.0 — content extraction**. Includes provider discovery orchestration, a deterministic Schema.org/JSON-LD and text extractor, MCP extraction tools, and automated tests. No live social-platform connector is claimed.
 
 ## License
 
