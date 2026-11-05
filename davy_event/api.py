@@ -16,7 +16,7 @@ from .core import deduplicate_events, export_events, normalize_event, verify_eve
 from .discovery import discover_events as run_discovery, register_connector, connector_status as get_connector_status, registered_connector_names
 from .extraction import extract_events
 from .fetcher import UnsafeURLError, fetch_public_url
-from .ocr import OCRUnavailableError, extract_text_from_image
+from .ocr import OCRUnavailableError, extract_text_from_image, ocr_status
 
 
 class ExtractRequest(BaseModel):
@@ -79,7 +79,7 @@ def create_app() -> FastAPI:
             "status": "ok",
             "version": "0.5.0",
             "connectors": {"web-search": "configured" if os.getenv("BRAVE_SEARCH_API_KEY") else "unavailable"},
-            "ocr": "optional",
+            "ocr": ocr_status(),
         }
 
     @app.get("/connectors")
