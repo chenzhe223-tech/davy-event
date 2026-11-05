@@ -244,7 +244,7 @@ def create_app() -> FastAPI:
         }
 
     @app.post("/ocr")
-    async def ocr(file: UploadFile = File(...), language: str = "eng") -> dict[str, Any]:
+    async def ocr(file: UploadFile = File(...), language: str = "chi_sim+eng") -> dict[str, Any]:
         data = await file.read(8_000_001)
         if len(data) > 8_000_000:
             raise HTTPException(status_code=413, detail="Image exceeds 8 MB.")
