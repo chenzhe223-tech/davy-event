@@ -101,3 +101,32 @@ def _coverage(result: ConnectorResult) -> dict[str, Any]:
         "records_count": len(result.records),
         "message": result.message,
     }
+
+
+def connector_status(platform: str) -> dict[str, Any]:
+    """Return actual configured provider status without attempting a search."""
+    connector = _REGISTERED_CONNECTORS.get(platform)
+    if connector is None:
+        return {
+            "platform": platform,
+            "status": "unavailable",
+            "message": "No connector is registered for this source.",
+        }
+    try:
+        available = bool(connector.is_available())
+    except Exception as exc:
+        return {
+            "platform": platform,
+            "status": "error",
+            "message": f"Connector status check failed: {type(exc).__name__}",
+        }
+    return {
+        "platform": platform,
+        "status": "available" if available else "unavailable",
+        "message": None if available else "Connector is registered but its credentials or access route are not configured.",
+    }
+
+
+def registered_connector_names() -> list[str]:
+    """Return stable names of currently registered connectors."""
+    return sorted(_REGISTERED_CONNECTORS)
