@@ -1,17 +1,15 @@
 services:
   - type: web
-    name: davylab-event-radar
-    runtime: python
+    name: davylab-event-radar-docker
+    runtime: docker
     plan: free
     region: singapore
-    branch: main
-    buildCommand: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-chi-sim && python -m pip install --upgrade pip && python -m pip install ".[api,ocr]" && tesseract --version
-    startCommand: uvicorn davy_event.api:app --host 0.0.0.0 --port $PORT
+    branch: docker-ocr-deploy
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /health
     autoDeploy: true
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.11
       - key: VOLCENGINE_SEARCH_API_KEY
         sync: false
       - key: DAVY_EVENT_API_TOKEN
