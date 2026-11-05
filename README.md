@@ -7,6 +7,7 @@ A reusable, open-source Agent Skill and Python core for discovering, extracting,
 ## What it does
 
 - Extracts event candidates from supplied HTML, Schema.org Event JSON-LD, structured records, and plain text.
+- Offers an optional host-provided LLM extraction callback with verbatim source-quote checks.
 - Normalizes event details and preserves source URLs and evidence.
 - Provides a pluggable connector contract and provider-agnostic discovery orchestration.
 - Reports source coverage and provider failures instead of pretending unavailable sources were searched.
@@ -18,22 +19,22 @@ Xiaohongshu, Douyin, and Dianping are target integrations, not currently live co
 
 ## Quick start
 
-```bash
+\`\`\`bash
 pip install -e ".[dev,mcp]"
 pytest
-```
+\`\`\`
 
 Start the MCP server:
 
-```bash
+\`\`\`bash
 python -m davy_event.adapters.mcp.server
-```
+\`\`\`
 
 See [SKILL.md](SKILL.md), [docs/CONNECTORS.md](docs/CONNECTORS.md), and [docs/INTEGRATION.md](docs/INTEGRATION.md).
 
 ## Project status
 
-**v0.3.0 — content extraction**. Includes provider discovery orchestration, a deterministic Schema.org/JSON-LD and text extractor, MCP extraction tools, and automated tests. No live social-platform connector is claimed.
+**v0.3.0 — content extraction**. Includes provider discovery orchestration, deterministic Schema.org/JSON-LD and text extraction, an optional LLM callback with source-quote grounding, MCP extraction tools, and automated tests. No live social-platform connector is claimed.
 
 ## License
 
