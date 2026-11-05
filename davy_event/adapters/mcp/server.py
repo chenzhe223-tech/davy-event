@@ -1,17 +1,25 @@
-"""Optional MCP server exposing DAVYLAB Event Radar core utilities.
+"""Optional MCP server exposing DAVYLAB Event Radar tools.
 
 Install with: pip install -e ".[mcp]"
 Run with: python -m davy_event.adapters.mcp.server
 """
 from __future__ import annotations
 
-import json
 from mcp.server.fastmcp import FastMCP
 
 from davy_event import normalize_event, deduplicate_events, verify_event, export_events
 from davy_event.connectors import unavailable
+from davy_event.discovery import discover_events as run_discovery
 
 mcp = FastMCP("davy-event")
+
+
+@mcp.tool()
+def discover_events(query: str, platforms: list[str] | None = None,
+                    location: str | None = None,
+                    date_range: dict | None = None) -> dict:
+    """Search configured compliant providers; reports unavailable when none are registered."""
+    return run_discovery(query, location=location, date_range=date_range, platforms=platforms)
 
 
 @mcp.tool()
@@ -40,9 +48,10 @@ def export(events: list[dict], format: str = "json") -> str:
 
 @mcp.tool()
 def connector_status(platform: str) -> dict:
-    """Report availability honestly; live platform search needs a configured compliant connector."""
+    """Report availability honestly; live search needs a configured compliant connector."""
     result = unavailable(platform)
-    return {"platform": result.platform, "status": result.status, "message": result.message, "records": result.records}
+    return {"platform": result.platform, "status": result.status,
+            "message": result.message, "records": result.records}
 
 
 if __name__ == "__main__":
