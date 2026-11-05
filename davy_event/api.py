@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import http.client
 from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -103,7 +104,7 @@ def create_app() -> FastAPI:
             page = fetch_public_url(request.url)
         except UnsafeURLError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
-        except RuntimeError as exc:
+        except (RuntimeError, OSError, http.client.HTTPException) as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
         events = extract_events(page.text, source_url=page.final_url, source_platform="web")
         return {
