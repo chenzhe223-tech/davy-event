@@ -41,7 +41,7 @@ For a Render deployment that enables the API and OCR together, use this build co
 
     sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-chi-sim && python -m pip install --upgrade pip && python -m pip install ".[api,ocr]" && tesseract --version
 
-The API exposes `POST /ocr`. The default language is `eng`; use `chi_sim` for Simplified Chinese or `chi_sim+eng` for mixed Chinese-English posters after installing the corresponding language data.
+The API exposes `POST /ocr`. The default language is `chi_sim+eng` for mixed Chinese-English posters; use `eng` for English-only images or `chi_sim` for Simplified Chinese. The OCR pipeline upscales and normalizes contrast before recognition. Check `/health` for OCR readiness and ensure both language packs are installed.
 
 ## API capabilities
 
