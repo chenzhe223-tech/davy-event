@@ -32,16 +32,16 @@ Local Python dependencies:
 
     python -m pip install -e ".[ocr]"
 
-On Debian 12 / Render native Python runtime, install the system engine and English language data:
+On Debian 12 / Render native Python runtime, install the system engine and English + Simplified Chinese language data:
 
     sudo apt-get update
-    sudo apt-get install -y tesseract-ocr tesseract-ocr-eng
+    sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-chi-sim
 
 For a Render deployment that enables the API and OCR together, use this build command:
 
-    sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng && python -m pip install --upgrade pip && python -m pip install ".[api,ocr]" && tesseract --version
+    sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-chi-sim && python -m pip install --upgrade pip && python -m pip install ".[api,ocr]" && tesseract --version
 
-The API exposes `POST /ocr`. The default language is `eng`; install the matching Tesseract language package before requesting another language (for example, `tesseract-ocr-chi-sim` for Simplified Chinese where available).
+The API exposes `POST /ocr`. The default language is `eng`; use `chi_sim` for Simplified Chinese or `chi_sim+eng` for mixed Chinese-English posters after installing the corresponding language data.
 
 ## API capabilities
 
