@@ -7,6 +7,7 @@
 - Added optional Tesseract OCR adapter for supplied event posters.
 - Added FastAPI endpoints for health, connector readiness, discovery, fetch, extraction, OCR, normalization, verification, deduplication, and export.
 - Connected search results to safe primary-page retrieval and event extraction (bounded to at most ten pages per request).
+- Added optional Bearer-token authentication for REST routes and connector readiness reporting.
 - Added connector, fetcher, and API tests; CI installs and tests API dependencies.
 - Social platforms remain unavailable until separately authorized connectors are implemented.
 
