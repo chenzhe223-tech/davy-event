@@ -103,7 +103,8 @@ def fetch_public_url(
         path = parsed.path or "/"
         if parsed.query:
             path += "?" + parsed.query
-        host_header = host if port in (80, 443) else f"{host}:{port}"
+        host_label = f"[{host}]" if ":" in host else host
+        host_header = host_label if port in (80, 443) else f"{host_label}:{port}"
         if scheme == "https":
             connection = _PinnedHTTPSConnection(host, port, pinned_ip, timeout, ssl.create_default_context())
         else:
