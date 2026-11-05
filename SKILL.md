@@ -9,22 +9,21 @@ description: Discover public events and local activities from authorized social-
 
 Find real, relevant events; preserve provenance; distinguish confirmed facts from claims; never fabricate missing details.
 
-## Supported sources
+## Supported inputs and sources
 
-- Xiaohongshu (小红书)
-- Douyin (抖音)
-- Dianping (大众点评)
-- Public web pages and search results
-- User-provided URLs, text, screenshots, and exports
+- Configured authorized connectors for public web or social-platform sources
+- User-provided URLs after the host has safely fetched the page
+- User-provided HTML, JSON-LD, text, screenshots, and exports
+- Screenshots after OCR/vision extraction by the host application
 
-A source is **available** only when a configured connector has a permitted access path. Do not claim that a platform was searched if its connector is unavailable.
+A source is **available** only when a configured connector has a permitted access path. Do not claim that a platform was searched if its connector is unavailable. The bundled extractor does not fetch URLs or bypass platform controls.
 
 ## Workflow
 
 1. Clarify or infer the search scope: keywords, city/area, date range, category, budget, audience, and requested platforms.
 2. Query only enabled connectors. Respect platform terms, robots/access policies, rate limits, privacy, and applicable law.
-3. Collect source evidence: canonical URL, platform, retrieval time, visible author/organizer, and the exact source text needed to support extracted fields.
-4. Extract one candidate event per distinct event occurrence.
+3. Collect source evidence: canonical URL, platform, retrieval time, and the exact source text needed to support extracted fields.
+4. Extract one candidate event per distinct event occurrence. Prefer Schema.org Event JSON-LD or organizer-provided structured data; otherwise parse visible text or use a host OCR/vision model for supplied screenshots.
 5. Normalize dates, timezone, currency, address, categories, and registration details. Preserve original text when normalization is uncertain.
 6. Verify key facts against the source and, where possible, an organizer or venue primary source. Mark unsupported fields as null.
 7. Deduplicate by event identity, venue, time, and semantic similarity. Keep all source URLs.
@@ -71,13 +70,17 @@ Unknown values must be null, not guessed.
 
 ## Tool/API contract
 
-When the runtime exposes the Python package, use `davy_event` functions:
+Python API:
+- `extract_events(content, source_url=None, source_platform="user-provided")`
 - `normalize_event(raw, source)`
+- `discover_events(query, connectors=None, ...)`
 - `deduplicate_events(events)`
 - `verify_event(event, evidence)`
 - `export_events(events, format="json")`
 
-For platform search, call only configured connector tools. If no connector is configured, explain the limitation and offer web search or user-provided links as a fallback.
+The extractor accepts supplied HTML, JSON-LD, dictionaries, and plain text. It does not perform network retrieval. For screenshots, the host agent should run OCR/vision first and pass the recognized text with evidence metadata.
+
+For platform search, call only configured connector tools. If no connector is configured, explain the limitation and offer user-provided content as a fallback.
 
 ## Response format
 
