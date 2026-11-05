@@ -31,8 +31,8 @@ Then install Tesseract and the language packs required by your OS. The API expos
 
 ## API capabilities
 
-- `GET /health`
-- `POST /discover` — configured provider search and source coverage.
+- `GET /health`, `GET /connectors` — health and provider readiness.
+- `POST /discover` — configured provider search, source coverage, and safe primary-page enrichment (up to five results by default).
 - `POST /fetch` — SSRF-resistant public HTTP(S) fetch and event extraction.
 - `POST /extract` — supplied HTML, JSON-LD, or text extraction.
 - `POST /ocr` — image OCR when the optional engine is installed.
