@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "davy-event"
-version = "0.3.0"
+version = "0.4.0"
 description = "Reusable event discovery and normalization core for AI agents"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -15,6 +15,9 @@ dependencies = []
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 mcp = ["mcp>=1.0,<2"]
+
+[project.scripts]
+davy-event = "davy_event.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["davy_event*"]
