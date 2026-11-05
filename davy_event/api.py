@@ -28,6 +28,8 @@ class DiscoverRequest(BaseModel):
     location: str | None = None
     date_range: dict[str, str] | None = None
     platforms: list[str] | None = None
+    fetch_sources: bool = True
+    max_sources: int = Field(default=5, ge=0, le=10)
 
 
 class NormalizeRequest(BaseModel):
@@ -73,12 +75,51 @@ def create_app() -> FastAPI:
 
     @app.post("/discover")
     def discover(request: DiscoverRequest) -> dict[str, Any]:
-        return run_discovery(
+        result = run_discovery(
             request.query,
             location=request.location,
             date_range=request.date_range,
             platforms=request.platforms,
         )
+        if request.fetch_sources and result.get("events"):
+            for candidate in result["events"][:request.max_sources]:
+                source_url = candidate.get("source_url")
+                if not source_url:
+                    candidate["fetch_status"] = "no_source_url"
+                    continue
+                try:
+                    page = fetch_public_url(source_url)
+                    extracted = extract_events(
+                        page.text, source_url=page.final_url, source_platform="web"
+                    )
+                    candidate["fetch_status"] = "fetched"
+                    candidate["fetched_url"] = page.final_url
+                    candidate["evidence"] = list(candidate.get("evidence") or []) + [{
+                        "type": "fetched_page",
+                        "source_url": page.final_url,
+                        "content_type": page.content_type,
+                        "byte_count": page.byte_count,
+                    }]
+                    if extracted:
+                        detail = extracted[0]
+                        for key, value in detail.items():
+                            if value not in (None, "", []):
+                                if key == "title" and candidate.get("title"):
+                                    continue
+                                candidate[key] = value
+                        candidate["verification_status"] = "source_claim"
+                except UnsafeURLError as exc:
+                    candidate["fetch_status"] = "blocked"
+                    candidate["fetch_message"] = str(exc)
+                except (RuntimeError, OSError, http.client.HTTPException) as exc:
+                    candidate["fetch_status"] = "fetch_error"
+                    candidate["fetch_message"] = str(exc)
+        result["enrichment"] = {
+            "enabled": request.fetch_sources,
+            "max_sources": request.max_sources,
+            "description": "Search candidates are enriched from safely fetched public pages; they remain source claims until corroborated."
+        }
+        return result
 
     @app.post("/normalize")
     def normalize(request: NormalizeRequest) -> dict[str, Any]:
