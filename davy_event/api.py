@@ -122,7 +122,9 @@ def create_app() -> FastAPI:
                         detail = extracted[0]
                         for key, value in detail.items():
                             if value not in (None, "", []):
-                                if key == "title" and candidate.get("title"):
+                                # Search-result identity and explicit date hints take precedence
+                                # over unrelated dates appearing elsewhere on a long roundup page.
+                                if key in {"title", "start_datetime", "end_datetime"} and candidate.get(key):
                                     continue
                                 candidate[key] = value
                         candidate["verification_status"] = "source_claim"
