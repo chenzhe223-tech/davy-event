@@ -10,4 +10,4 @@ __all__ = [
     "discover_events", "register_connector", "unregister_connector",
     "extract_events", "extract_with_model",
 ]
-__version__ = "0.3.0"
+__version__ = "0.4.0"
