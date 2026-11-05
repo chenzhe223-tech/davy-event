@@ -122,6 +122,23 @@ def _event_from_jsonld(obj: dict[str, Any], source_url: str | None, platform: st
     }, platform)
 
 
+def _find_start_datetime(text: str) -> str | None:
+    iso = re.search(r"(?<!\\d)(20\\d{2}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}(?::\\d{2})?(?:Z|[+-]\\d{2}:?\\d{2})?)?)", text)
+    if iso:
+        return iso.group(1)
+    chinese = re.search(r"(20\\d{2})年(\\d{1,2})月(\\d{1,2})日(?:\\s*(\\d{1,2}):(\\d{2}))?", text)
+    if chinese:
+        year, month, day, hour, minute = chinese.groups()
+        value = f"{int(year):04d}-{int(month):02d}-{int(day):02d}"
+        return f"{value}T{int(hour):02d}:{minute}:00" if hour is not None else value
+    slash = re.search(r"(?<!\\d)(20\\d{2})/(\\d{1,2})/(\\d{1,2})(?:\\s+(\\d{1,2}):(\\d{2}))?", text)
+    if slash:
+        year, month, day, hour, minute = slash.groups()
+        value = f"{int(year):04d}-{int(month):02d}-{int(day):02d}"
+        return f"{value}T{int(hour):02d}:{minute}:00" if hour is not None else value
+    return None
+
+
 def extract_events(content: str | dict[str, Any] | list[Any], *,
                    source_url: str | None = None,
                    source_platform: str = "user-provided") -> list[dict[str, Any]]:
@@ -161,7 +178,7 @@ def extract_events(content: str | dict[str, Any] | list[Any], *,
     record = normalize_event({
         "title": title,
         "description": description or visible_text[:1000] or None,
-        "start_datetime": date_match.group(1) if date_match else None,
+        "start_datetime": start_datetime,
         "source_url": source_url,
         "evidence": [{"type": "page_text", "source_url": source_url, "retrieved_at": datetime.now(timezone.utc).isoformat()}],
     }, source_platform)
