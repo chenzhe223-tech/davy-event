@@ -35,7 +35,7 @@ Configure Brave on the server:
 
     export BRAVE_SEARCH_API_KEY="your-key"
 
-Useful endpoints: `/discover`, `/fetch`, `/extract`, `/ocr`, `/verify`, `/deduplicate`, and `/export`. See `docs/INTEGRATION.md` for request details.
+Useful endpoints: `/connectors`, `/discover` (search candidates are safely enriched from up to five primary pages by default), `/fetch`, `/extract`, `/ocr`, `/verify`, `/deduplicate`, and `/export`. See `docs/INTEGRATION.md` for request details.
 
 ## Local processing
 
