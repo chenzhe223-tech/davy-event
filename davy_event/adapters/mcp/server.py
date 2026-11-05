@@ -18,6 +18,7 @@ from davy_event import (
     normalize_event, deduplicate_events, verify_event, export_events,
     register_connector,
 )
+from davy_event.extraction import extract_events
 from davy_event.connectors import unavailable
 from davy_event.discovery import discover_events as run_discovery
 
@@ -43,6 +44,13 @@ def discover_events(query: str, platforms: list[str] | None = None,
                     date_range: dict | None = None) -> dict:
     """Search configured compliant providers; reports unavailable when none are registered."""
     return run_discovery(query, location=location, date_range=date_range, platforms=platforms)
+
+
+@mcp.tool()
+def extract_event(content: str | dict | list, source_url: str | None = None,
+                  source_platform: str = "user-provided") -> list[dict]:
+    """Extract event candidates from supplied HTML, JSON-LD, or text. No URL is fetched."""
+    return extract_events(content, source_url=source_url, source_platform=source_platform)
 
 
 @mcp.tool()
