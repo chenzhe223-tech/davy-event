@@ -52,11 +52,14 @@ def test_discover_enriches_search_candidates_with_fetched_event(monkeypatch):
         byte_count=200,
     ))
     client = TestClient(create_app())
-    from davy_event.discovery import register_connector
+    from davy_event.discovery import register_connector, unregister_connector
     register_connector(FakeConnector())
-    response = client.post("/discover", json={"query": "open day", "platforms": ["web-search"]})
-    assert response.status_code == 200
-    event = response.json()["events"][0]
-    assert event["start_datetime"] == "2026-12-20T10:00:00+08:00"
-    assert event["fetch_status"] == "fetched"
-    assert event["verification_status"] == "source_claim"
+    try:
+        response = client.post("/discover", json={"query": "open day", "platforms": ["web-search"]})
+        assert response.status_code == 200
+        event = response.json()["events"][0]
+        assert event["start_datetime"] == "2026-12-20T10:00:00+08:00"
+        assert event["fetch_status"] == "fetched"
+        assert event["verification_status"] == "source_claim"
+    finally:
+        unregister_connector("web-search")
