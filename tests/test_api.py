@@ -27,3 +27,36 @@ def test_fetch_rejects_private_destination():
     client = TestClient(create_app())
     response = client.post("/fetch", json={"url": "http://127.0.0.1/"})
     assert response.status_code == 400
+
+
+def test_discover_enriches_search_candidates_with_fetched_event(monkeypatch):
+    from types import SimpleNamespace
+    import davy_event.api as api
+
+    class FakeConnector:
+        name = "web-search"
+        def is_available(self):
+            return True
+        def search(self, query, location=None, date_range=None):
+            from davy_event.connectors import ConnectorResult
+            return ConnectorResult("web-search", "ok", [{
+                "title": "Search result title",
+                "description": "A clue",
+                "source_url": "https://events.example/page",
+            }])
+
+    monkeypatch.setattr(api, "fetch_public_url", lambda url: SimpleNamespace(
+        text='<html><head><script type="application/ld+json">{"@type":"Event","name":"Official Open Day","startDate":"2026-12-20T10:00:00+08:00"}</script></head><body>Open day</body></html>',
+        final_url=url,
+        content_type="text/html",
+        byte_count=200,
+    ))
+    from davy_event.discovery import register_connector
+    register_connector(FakeConnector())
+    client = TestClient(create_app())
+    response = client.post("/discover", json={"query": "open day", "platforms": ["web-search"]})
+    assert response.status_code == 200
+    event = response.json()["events"][0]
+    assert event["start_datetime"] == "2026-12-20T10:00:00+08:00"
+    assert event["fetch_status"] == "fetched"
+    assert event["verification_status"] == "source_claim"
