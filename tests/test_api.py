@@ -107,7 +107,6 @@ def test_openapi_exposes_bearer_auth_for_protected_routes(monkeypatch):
     assert openapi["components"]["securitySchemes"]["BearerAuth"] == {
         "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "JWT",
         "description": "Enter the DAVY_EVENT_API_TOKEN value. Do not include the 'Bearer ' prefix.",
     }
     assert openapi["paths"]["/connectors"]["get"]["security"] == [{"BearerAuth": []}]
