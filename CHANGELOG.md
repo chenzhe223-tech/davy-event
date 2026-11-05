@@ -1,11 +1,18 @@
 # Changelog
 
+## 0.5.0 — Search, safe fetch, OCR and REST API foundation
+
+- Added Brave Search API connector with server-side token configuration and honest unavailable status.
+- Added SSRF-resistant public HTTP(S) fetcher with pinned DNS resolution, redirect revalidation, content-type and response-size limits.
+- Added optional Tesseract OCR adapter for supplied event posters.
+- Added FastAPI endpoints for health, discovery, fetch, extraction, OCR, normalization, verification, deduplication, and export.
+- Added connector, fetcher, and API tests; CI installs and tests API dependencies.
+- Social platforms remain unavailable until separately authorized connectors are implemented.
+
 ## 0.4.0 — Usable local workflow
 
 - Expanded SKILL.md with task triggers, honest source coverage, installation, CLI, and MCP usage.
 - Added davy-event CLI for extracting, normalizing, verifying, deduplicating, and exporting local event data.
-- Added tests for CLI extraction, validation errors, and JSONL export.
-- Local processing requires no API key. Live discovery still requires a separately configured compliant connector.
 
 ## 0.3.0 — Content extraction
 
