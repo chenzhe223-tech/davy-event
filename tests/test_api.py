@@ -74,3 +74,12 @@ def test_connectors_endpoint_reports_platform_gaps():
     assert status["xiaohongshu"] == "unavailable"
     assert status["douyin"] == "unavailable"
     assert status["dianping"] == "unavailable"
+
+
+def test_api_token_protects_non_health_routes(monkeypatch):
+    monkeypatch.setenv("DAVY_EVENT_API_TOKEN", "test-secret")
+    client = TestClient(create_app())
+    assert client.get("/health").status_code == 200
+    assert client.get("/connectors").status_code == 401
+    assert client.get("/connectors", headers={"Authorization": "Bearer wrong"}).status_code == 401
+    assert client.get("/connectors", headers={"Authorization": "Bearer test-secret"}).status_code == 200
