@@ -3,6 +3,8 @@
 ## 0.3.0 — Content extraction
 - Added deterministic extraction from Schema.org Event JSON-LD, HTML metadata, and plain text.
 - Added MCP `extract_event` tool and public Python API.
+- Added optional host-provided LLM extraction with verbatim source-quote validation.
+- Fixed evidence merging for dictionary-based provenance records and added Chinese date parsing.
 - Added extraction tests and documented host-side URL fetching/OCR boundaries.
 - No live social-platform connectors are claimed.
 
