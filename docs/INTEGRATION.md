@@ -1,112 +1,62 @@
 # Integration guide
 
-## Deterministic extraction
+## Local CLI
 
-Pass page content already obtained by your host application. The extractor supports Schema.org Event JSON-LD, HTML pages containing JSON-LD, and plain text. It does not fetch URLs or execute scripts.
+Install and use the local CLI without an API key:
 
-```python
-from davy_event import extract_events
+    pip install -e .
+    davy-event extract event.html --source-url "https://example.org/event"
 
-events = extract_events(
-    html_or_text,
-    source_url="https://example.org/event-page",
-    source_platform="web",
-)
-```
+## Brave web discovery
 
-## Optional LLM extraction
+Set `BRAVE_SEARCH_API_KEY` on the server. The built-in `web-search` connector returns public search candidates with provenance. Search snippets are not independently verified event facts.
 
-Any host application can supply its own model callback. The extractor requires at least one exact, verbatim source quote for each accepted event and always labels the result as a source claim, not independently verified.
+## REST API
 
-```python
-from davy_event import extract_with_model
+Install and run:
 
-def my_model(system_prompt, source_text):
-    # Call your configured model and return a JSON object or JSON string.
-    ...
+    pip install -e ".[api]"
+    uvicorn davy_event.api:app --host 127.0.0.1 --port 8000
 
-events = extract_with_model(
-    source_text,
-    my_model,
-    source_url="https://example.org/post",
-    source_platform="user-provided",
-)
-```
+The default bind is loopback in this example. Put the service behind authenticated access and TLS before exposing it to a network. Configure the Brave key as a server environment variable.
 
-For screenshots, use an OCR or vision model in the host application first, then pass the recognized text to either extractor. OCR-derived fields should remain source claims until checked against the original post or organizer.
+Endpoints:
+- `GET /health`
+- `POST /discover` — query configured providers and return source coverage.
+- `POST /extract` — extract events from supplied text, HTML, or JSON-LD.
+- `POST /fetch` — safely fetch public HTTP(S) pages and extract event candidates.
+- `POST /ocr` — OCR a supplied image when optional OCR dependencies and the Tesseract binary are installed.
+- `POST /normalize`
+- `POST /verify`
+- `POST /deduplicate`
+- `POST /export`
 
-## Python: register a compliant provider
+The fetcher permits only HTTP/HTTPS on standard ports, rejects credentials and non-public DNS answers, pins the validated destination IP for the connection, manually validates each redirect, restricts content types, and limits response bytes and time. It is not a substitute for an outbound firewall or service isolation.
 
-The discovery engine is provider-agnostic. It does not scrape websites or call social platforms by itself. Implement the connector contract using an official API, an authorized data provider, permitted public access, or user-supplied exports.
+## URL fetching security
 
-```python
-from davy_event import discover_events
-from davy_event.connectors import ConnectorResult
+The fetcher uses direct pinned-IP connections to avoid a second DNS lookup after validation. It rejects a hostname if any resolved address is non-global, preventing mixed public/private DNS answers from being accepted. Redirect targets are independently resolved and validated. Only HTML, XHTML, plain text, and JSON-LD are accepted.
 
-class MyAuthorizedProvider:
-    name = "authorized-web"
+Security reference: OWASP SSRF Prevention Cheat Sheet.
 
-    def is_available(self):
-        return True
+## OCR
 
-    def search(self, query, location=None, date_range=None):
-        # Replace with your authorized provider call.
-        records = [{
-            "title": "Weekend Family Workshop",
-            "start_datetime": "2026-11-07T10:00:00+08:00",
-            "address": "Singapore",
-            "source_url": "https://example.org/event",
-        }]
-        return ConnectorResult(self.name, "ok", records)
+Install Python dependencies:
 
-result = discover_events("family workshop", [MyAuthorizedProvider()], location="Singapore")
-print(result["status"], result["coverage"], result["events"])
-```
+    pip install -e ".[ocr]"
 
-The example record illustrates the required shape; it is not a live event listing.
+The host must also install the Tesseract OCR binary and required language data. Example:
 
-For reusable in-process registration, call `register_connector(instance)`; later calls to `discover_events(query)` use the registered providers. Use `unregister_connector(name)` to remove one.
+    sudo apt-get install tesseract-ocr tesseract-ocr-chi-sim
+    curl -F "file=@poster.jpg" "http://127.0.0.1:8000/ocr?language=chi_sim+eng"
 
-## Process user-provided records
-
-```python
-from davy_event import normalize_event, verify_event, deduplicate_events, export_events
-
-event = normalize_event({
-    "活动名称": "Weekend Family Workshop",
-    "开始时间": "2026-11-07T10:00:00+08:00",
-    "地址": "Singapore",
-    "原文链接": "https://example.org/event"
-}, source="user-provided")
-
-events = deduplicate_events([verify_event(event)])
-print(export_events(events, "json"))
-```
-
-## Agent Skill
-
-Install or reference this repository as a Skill and follow the root `SKILL.md`. An agent should call only connectors configured in its runtime and must disclose source coverage.
+OCR output is source-derived text, not verified fact. Event candidates extracted from OCR remain source claims.
 
 ## MCP server
 
 Install and start:
 
-```bash
-pip install -e ".[mcp]"
-python -m davy_event.adapters.mcp.server
-```
+    pip install -e ".[mcp]"
+    python -m davy_event.adapters.mcp.server
 
-The MCP server exposes `discover_events`, `extract_event`, `normalize`, `deduplicate`, `verify`, `export`, and `connector_status`. By default, discovery returns `unavailable` because no live providers are bundled. The extraction tool processes supplied content only; it does not fetch a URL.
-
-To load authorized provider plugins, set `DAVY_EVENT_CONNECTOR_MODULES` to a comma-separated list of importable Python module names before starting the server. Each module must expose `register_connectors()`, returning connector instances; alternatively, it may register providers itself using `register_connector(instance)` during import. Only load trusted local modules.
-
-## Tool contract
-
-- `discover_events`: query, optional platform list, location and date range; returns events, per-source coverage and status.
-- `extract_event`: parse supplied HTML, JSON-LD, dictionaries, or text into event candidates.
-- `normalize`: convert one source record to the shared schema.
-- `verify`: check completeness and evidence metadata; it does not independently browse.
-- `deduplicate`: merge conservative exact matches while preserving source URLs.
-- `export`: JSON or JSONL.
-
-Input and output should use `schemas/event.schema.json`.
+MCP exposes extraction, discovery, normalization, verification, deduplication, export, and connector status. Authorized connector plugins may be loaded through `DAVY_EVENT_CONNECTOR_MODULES`.
