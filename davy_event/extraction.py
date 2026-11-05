@@ -69,7 +69,7 @@ def _walk_jsonld(value: Any):
             yield from _walk_jsonld(graph)
         else:
             yield value
-        for key in ("mainEntity", "itemListElement", "subEvent"):
+        for key in ("mainEntity", "itemListElement", "subEvent", "item", "itemOffered", "subjectOf"):
             if key in value:
                 yield from _walk_jsonld(value[key])
 
@@ -167,7 +167,7 @@ def extract_events(content: str | dict[str, Any] | list[Any], *,
     else:
         page_title = ""
         description = None
-        visible_text = re.sub(r"\s+", " ", text).strip()
+        visible_text = text.strip()
 
     if not visible_text and not page_title:
         return []
