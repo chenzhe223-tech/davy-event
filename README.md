@@ -15,6 +15,8 @@ Install local processing:
 
 ## Enable web discovery and REST API
 
+On Windows, run `examples/quickstart.ps1` from PowerShell for the local API setup. The script binds only to `127.0.0.1` and does not expose the service publicly.
+
     python -m pip install -e ".[api]"
     export BRAVE_SEARCH_API_KEY="your-key"
     export DAVY_EVENT_API_TOKEN="set-a-long-random-token-for-remote-access"
