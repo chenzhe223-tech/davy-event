@@ -84,7 +84,7 @@ def discover_events(
         if missing_platform not in covered:
             coverage.append(_coverage(unavailable(missing_platform)))
     merged = deduplicate_events(events)
-    status = "ok" if merged else ("partial" if any(x["status"] == "error" for x in coverage) else "empty")
+    status = "ok" if merged else ("partial" if any(x["status"] == "error" for x in coverage) else ("unavailable" if coverage and all(x["status"] == "unavailable" for x in coverage) else "empty"))
     return {
         "query": query,
         "status": status,
