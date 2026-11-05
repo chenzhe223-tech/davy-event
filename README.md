@@ -1,35 +1,39 @@
 # DAVYLAB Event Radar
 
-A reusable, open-source Agent Skill for discovering, extracting, validating, deduplicating, and exporting public event information across social platforms and the open web.
+A reusable, open-source Agent Skill and Python core for discovering, extracting, validating, deduplicating, and exporting public event information.
 
 **Repository:** https://github.com/chenzhe223-tech/davy-event
 
 ## What it does
 
-- Turns search results, public URLs, and user-provided content into normalized event records.
-- Supports pluggable source connectors for Xiaohongshu, Douyin, Dianping, and web search.
-- Extracts event title, time, venue, location, price, organizer, registration details, source URL, and evidence.
-- Deduplicates cross-platform mentions and flags uncertain or expired information.
-- Exposes a stable JSON schema for other apps and agents.
+- Normalizes event records from authorized providers, public sources, and user-provided content.
+- Provides a pluggable connector contract and provider-agnostic discovery orchestration.
+- Reports source coverage and provider failures instead of pretending unavailable sources were searched.
+- Deduplicates cross-source mentions and preserves provenance/evidence.
+- Exposes Python functions, an MCP server, and a stable JSON schema for other apps and agents.
 
-## Important platform boundary
+## Platform boundary
 
-This project does not bypass login, CAPTCHAs, access controls, rate limits, private content, or platform anti-bot protections. Platform connectors must use permitted public access, official/authorized APIs, user-provided exports, or browser sessions explicitly authorized by the user. A connector may return `unsupported` when compliant access is unavailable. Never invent event details.
+Xiaohongshu, Douyin, and Dianping are target integrations, not currently live connectors. They require an official/authorized API, permitted public access, or user-provided exports. This project does not bypass login, CAPTCHAs, access controls, rate limits, private content, or anti-bot protections. Never invent event details.
 
 ## Quick start
-
-The first release is an Agent Skill specification and a lightweight Python core.
 
 ```bash
 pip install -e ".[dev,mcp]"
 pytest
 ```
 
+Start the MCP server:
+
+```bash
+python -m davy_event.adapters.mcp.server
+```
+
 See [SKILL.md](SKILL.md), [docs/CONNECTORS.md](docs/CONNECTORS.md), and [docs/INTEGRATION.md](docs/INTEGRATION.md).
 
 ## Project status
 
-**v0.1.0 — foundation**. Stable event schema, source contract, extraction/verification guidance, and starter Python package. Live platform integrations are deliberately gated on a compliant access method and credentials where required.
+**v0.2.0 — discovery orchestration**. Includes a provider contract, discovery coordinator, source coverage reporting, MCP tools, and mock-provider tests. No live social-platform connector is claimed.
 
 ## License
 
