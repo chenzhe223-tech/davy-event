@@ -138,6 +138,31 @@ def _find_start_datetime(text: str) -> str | None:
         return f"{value}T{int(hour):02d}:{minute}:00" if hour is not None else value
     return None
 
+def _find_date_range(text: str) -> tuple[str | None, str | None]:
+    """Parse explicit English date ranges such as 2–8 Nov 2026 without guessing a year."""
+    month = r"(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+    patterns = [
+        rf"(?<!\\d)(\\d{{1,2}})\\s*[-–—]\\s*(\\d{{1,2}})\\s+{month}\\s+(20\\d{{2}})(?!\\d)",
+        rf"(?<!\\d){month}\\s+(\\d{{1,2}})\\s*[-–—]\\s*(\\d{{1,2}}),?\\s+(20\\d{{2}})(?!\\d)",
+    ]
+    for index, pattern in enumerate(patterns):
+        match = re.search(pattern, text, re.IGNORECASE)
+        if not match:
+            continue
+        try:
+            if index == 0:
+                first, last, month_name, year = match.groups()
+            else:
+                month_name, first, last, year = match.groups()
+            month_number = datetime.strptime(month_name[:3].title(), "%b").month
+            start = datetime(int(year), month_number, int(first)).date().isoformat()
+            end = datetime(int(year), month_number, int(last)).date().isoformat()
+            return start, end
+        except ValueError:
+            continue
+    return None, None
+
+
 def extract_events(content: str | dict[str, Any] | list[Any], *,
                    source_url: str | None = None,
                    source_platform: str = "user-provided") -> list[dict[str, Any]]:
