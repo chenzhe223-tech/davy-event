@@ -21,7 +21,7 @@ This project does not bypass login, CAPTCHAs, access controls, rate limits, priv
 The first release is an Agent Skill specification and a lightweight Python core.
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,mcp]"
 pytest
 ```
 
