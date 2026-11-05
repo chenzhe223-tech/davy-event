@@ -1,5 +1,21 @@
 # Integration guide
 
+## Extract events from supplied content
+
+Pass page content already obtained by your host application. The extractor supports Schema.org Event JSON-LD, HTML pages containing JSON-LD, and plain text fallback. It does not fetch URLs or execute scripts.
+
+```python
+from davy_event import extract_events
+
+events = extract_events(
+    html_or_text,
+    source_url="https://example.org/event-page",
+    source_platform="web",
+)
+```
+
+For screenshots, use an OCR or vision model in the host application first, then pass the recognized text to `extract_events`. OCR-derived fields should remain source claims until checked against the original post or organizer.
+
 ## Python: register a compliant provider
 
 The discovery engine is provider-agnostic. It does not scrape websites or call social platforms by itself. Implement the connector contract using an official API, an authorized data provider, permitted public access, or user-supplied exports.
@@ -61,13 +77,14 @@ pip install -e ".[mcp]"
 python -m davy_event.adapters.mcp.server
 ```
 
-The MCP server exposes `discover_events`, `normalize`, `deduplicate`, `verify`, `export`, and `connector_status`. By default, discovery returns `unavailable` because no live providers are bundled.
+The MCP server exposes `discover_events`, `extract_event`, `normalize`, `deduplicate`, `verify`, `export`, and `connector_status`. By default, discovery returns `unavailable` because no live providers are bundled. The extraction tool processes supplied content only; it does not fetch a URL.
 
 To load authorized provider plugins, set `DAVY_EVENT_CONNECTOR_MODULES` to a comma-separated list of importable Python module names before starting the server. Each module must expose `register_connectors()`, returning connector instances; alternatively, it may register providers itself using `register_connector(instance)` during import. Only load trusted local modules.
 
 ## Tool contract
 
 - `discover_events`: query, optional platform list, location and date range; returns events, per-source coverage and status.
+- `extract_event`: parse supplied HTML, JSON-LD, dictionaries, or text into event candidates.
 - `normalize`: convert one source record to the shared schema.
 - `verify`: check completeness and evidence metadata; it does not independently browse.
 - `deduplicate`: merge conservative exact matches while preserving source URLs.
