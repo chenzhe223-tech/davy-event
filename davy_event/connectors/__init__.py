@@ -27,5 +27,6 @@ def unavailable(platform: str, reason: str = "No compliant connector is configur
 
 
 from .brave import BraveSearchConnector
+from .volcengine import VolcengineSearchConnector
 
-__all__ = ["ConnectorResult", "EventConnector", "unavailable", "BraveSearchConnector"]
+__all__ = ["ConnectorResult", "EventConnector", "unavailable", "BraveSearchConnector", "VolcengineSearchConnector"]
