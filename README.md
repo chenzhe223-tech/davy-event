@@ -19,16 +19,16 @@ Xiaohongshu, Douyin, and Dianping are target integrations, not currently live co
 
 ## Quick start
 
-\`\`\`bash
+```bash
 pip install -e ".[dev,mcp]"
 pytest
-\`\`\`
+```
 
 Start the MCP server:
 
-\`\`\`bash
+```bash
 python -m davy_event.adapters.mcp.server
-\`\`\`
+```
 
 See [SKILL.md](SKILL.md), [docs/CONNECTORS.md](docs/CONNECTORS.md), and [docs/INTEGRATION.md](docs/INTEGRATION.md).
 
