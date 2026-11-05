@@ -49,7 +49,7 @@ def test_non_event_jsonld_is_ignored():
 
 def test_plain_text_extracts_explicit_chinese_datetime():
     events = extract_events(
-        "城市周末市集\\n活动时间：2026年11月15日 14:30\\n欢迎参加",
+        "城市周末市集\n活动时间：2026年11月15日 14:30\n欢迎参加",
         source_url="https://events.test/market",
     )
     assert events[0]["title"] == "城市周末市集 活动时间：2026年11月15日 14:30 欢迎参加" or events[0]["title"] == "城市周末市集"
