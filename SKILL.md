@@ -72,13 +72,14 @@ Unknown values must be null, not guessed.
 
 Python API:
 - `extract_events(content, source_url=None, source_platform="user-provided")`
+- `extract_with_model(content, model_callback, source_url=None, source_platform="user-provided")`
 - `normalize_event(raw, source)`
 - `discover_events(query, connectors=None, ...)`
 - `deduplicate_events(events)`
 - `verify_event(event, evidence)`
 - `export_events(events, format="json")`
 
-The extractor accepts supplied HTML, JSON-LD, dictionaries, and plain text. It does not perform network retrieval. For screenshots, the host agent should run OCR/vision first and pass the recognized text with evidence metadata.
+The deterministic extractor accepts supplied HTML, JSON-LD, dictionaries, and plain text. The optional model extractor accepts a host-provided model callback and requires exact source-matching quotes before accepting an event. Both avoid network retrieval. For screenshots, the host agent should run OCR/vision first and pass the recognized text with evidence metadata.
 
 For platform search, call only configured connector tools. If no connector is configured, explain the limitation and offer user-provided content as a fallback.
 
