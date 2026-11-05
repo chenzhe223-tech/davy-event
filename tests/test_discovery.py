@@ -1,4 +1,6 @@
-from davy_event.discovery import discover_events
+from davy_event.discovery import (
+    discover_events, register_connector, unregister_connector,
+)
 from davy_event.connectors import ConnectorResult
 
 
@@ -51,3 +53,14 @@ def test_one_connector_failure_does_not_hide_other_results():
     assert result["status"] == "ok"
     assert len(result["events"]) == 1
     assert result["coverage"][0]["status"] == "error"
+
+
+def test_registered_connectors_are_used_by_default():
+    connector = MockConnector()
+    register_connector(connector)
+    try:
+        result = discover_events("weekend market")
+        assert result["status"] == "ok"
+        assert result["events"][0]["title"] == "Weekend Market"
+    finally:
+        unregister_connector(connector.name)
