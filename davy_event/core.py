@@ -9,7 +9,7 @@ from typing import Any, Iterable
 
 def _clean(value: Any) -> Any:
     if isinstance(value, str):
-        value = re.sub(r"\\s+", " ", value).strip()
+        value = re.sub(r"\s+", " ", value).strip()
         return value or None
     return value
 
