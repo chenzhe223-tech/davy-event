@@ -74,3 +74,23 @@ def test_extracts_english_date_range_from_html_title_and_meta():
     events = extract_events(html, source_url="https://events.test/week")
     assert events[0]["start_datetime"] == "2026-11-02"
     assert events[0]["end_datetime"] == "2026-11-08"
+
+
+def test_extracts_natural_language_english_date_range():
+    events = extract_events(
+        "The Best Things To Do With Kids In Singapore This Week (2 to 8 Nov 2026)",
+        source_url="https://events.test/kids",
+        source_platform="web-search",
+    )
+    assert events[0]["start_datetime"] == "2026-11-02"
+    assert events[0]["end_datetime"] == "2026-11-08"
+
+
+def test_title_date_range_wins_over_unrelated_dates_in_long_description():
+    html = """<html><head>
+    <title>Family events: 2 to 8 Nov 2026</title>
+    <meta name="description" content="Other activities run 13–15 Nov 2026." />
+    </head><body>Family activities</body></html>"""
+    events = extract_events(html, source_url="https://events.test/week")
+    assert events[0]["start_datetime"] == "2026-11-02"
+    assert events[0]["end_datetime"] == "2026-11-08"
