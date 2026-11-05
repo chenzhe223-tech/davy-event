@@ -70,7 +70,7 @@ def ocr_status() -> str:
         import pytesseract
         languages = set(pytesseract.get_languages(config=""))
         if not {"eng", "chi_sim"}.issubset(languages):
-            return "partial"
-    except (ImportError, Exception):
+            return "unavailable"
+    except Exception:
         return "unavailable"
     return "available"
