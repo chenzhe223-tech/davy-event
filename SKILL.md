@@ -31,9 +31,12 @@ description: Discover public events and local activities using authorized web se
     pip install -e ".[api]"
     uvicorn davy_event.api:app --host 127.0.0.1 --port 8000
 
-Configure Brave on the server:
+Configure Brave and API access on the server:
 
     export BRAVE_SEARCH_API_KEY="your-key"
+    export DAVY_EVENT_API_TOKEN="long-random-secret"
+
+When `DAVY_EVENT_API_TOKEN` is set, send `Authorization: Bearer <token>` with API requests. Without it, keep the service bound to loopback only.
 
 Useful endpoints: `/connectors`, `/discover` (search candidates are safely enriched from up to five primary pages by default), `/fetch`, `/extract`, `/ocr`, `/verify`, `/deduplicate`, and `/export`. See `docs/INTEGRATION.md` for request details.
 
