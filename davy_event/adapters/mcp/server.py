@@ -2,15 +2,38 @@
 
 Install with: pip install -e ".[mcp]"
 Run with: python -m davy_event.adapters.mcp.server
+
+Optional connector plugins can be loaded from comma-separated module names in
+DAVY_EVENT_CONNECTOR_MODULES. Each module may expose register_connectors(),
+which returns connector instances or registers them using register_connector().
 """
 from __future__ import annotations
 
+import importlib
+import os
+
 from mcp.server.fastmcp import FastMCP
 
-from davy_event import normalize_event, deduplicate_events, verify_event, export_events
+from davy_event import (
+    normalize_event, deduplicate_events, verify_event, export_events,
+    register_connector,
+)
 from davy_event.connectors import unavailable
 from davy_event.discovery import discover_events as run_discovery
 
+
+def _load_connector_plugins() -> None:
+    modules = [name.strip() for name in os.getenv("DAVY_EVENT_CONNECTOR_MODULES", "").split(",") if name.strip()]
+    for module_name in modules:
+        module = importlib.import_module(module_name)
+        factory = getattr(module, "register_connectors", None)
+        if callable(factory):
+            connectors = factory() or []
+            for connector in connectors:
+                register_connector(connector)
+
+
+_load_connector_plugins()
 mcp = FastMCP("davy-event")
 
 
