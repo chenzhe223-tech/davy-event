@@ -75,7 +75,15 @@ def deduplicate_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]
         if url and url not in item["source_urls"]:
             item["source_urls"].append(url)
         if event.get("evidence"):
-            item["evidence"] = list(dict.fromkeys(item.get("evidence", []) + event["evidence"]))
+            combined = item.get("evidence", []) + event["evidence"]
+            unique: list[Any] = []
+            seen: set[str] = set()
+            for evidence_item in combined:
+                fingerprint = json.dumps(evidence_item, ensure_ascii=False, sort_keys=True, default=str)
+                if fingerprint not in seen:
+                    seen.add(fingerprint)
+                    unique.append(evidence_item)
+            item["evidence"] = unique
     return list(merged.values())
 
 
