@@ -51,7 +51,7 @@ def _validated_target(url: str, resolver=socket.getaddrinfo) -> tuple[str, str, 
         scheme = parsed.scheme.lower()
         if scheme not in {"http", "https"}:
             raise UnsafeURLError("Only HTTP and HTTPS URLs are allowed.")
-        if not parsed.hostname or parsed.username is not None or parsed.password is not None:
+        if not parsed.hostname or "%" in parsed.hostname or parsed.username is not None or parsed.password is not None:
             raise UnsafeURLError("URL must contain a hostname and no embedded credentials.")
         if parsed.fragment:
             url = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, parsed.query, ""))
@@ -92,6 +92,7 @@ def fetch_public_url(
     max_bytes: int = 1_000_000,
     max_redirects: int = 3,
     resolver=socket.getaddrinfo,
+    connection_factory=None,
 ) -> FetchResult:
     if not isinstance(url, str) or len(url) > 2048:
         raise UnsafeURLError("URL must be a string no longer than 2048 characters.")
@@ -105,7 +106,9 @@ def fetch_public_url(
             path += "?" + parsed.query
         host_label = f"[{host}]" if ":" in host else host
         host_header = host_label if port in (80, 443) else f"{host_label}:{port}"
-        if scheme == "https":
+        if connection_factory is not None:
+            connection = connection_factory(scheme, host, port, pinned_ip, timeout)
+        elif scheme == "https":
             connection = _PinnedHTTPSConnection(host, port, pinned_ip, timeout, ssl.create_default_context())
         else:
             connection = http.client.HTTPConnection(pinned_ip, port=port, timeout=timeout)
